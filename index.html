@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Wind Sound Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    #wind-control {
+      margin: 20px auto;
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #wind-control label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    #wind-control input[type="range"] {
+      width: 100%;
+      height: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* 선풍기 스타일 */
+    #fan {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 50px auto;
+    }
+
+    #fan .base {
+      width: 100%;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 10px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+
+    #fan .blade {
+      width: 150px;
+      height: 10px;
+      background-color: #000;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: 50% 100%;
+      transform: translate(-50%, -50%);
+    }
+
+    #fan .blade:nth-child(1) {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    #fan .blade:nth-child(2) {
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    #fan .blade:nth-child(3) {
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    #fan .blade:nth-child(4) {
+      transform: translate(-50%, -50%) rotate(270deg);
+    }
+
+    /* 애니메이션 */
+    @keyframes spin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    #fan.spinning .blade {
+      animation: spin 2s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="fan">
+    <div class="base"></div>
+    <div class="blade"></div>
+    <div class="blade"></div>
+    <div class="blade"></div>
+    <div class="blade"></div>
+  </div>
+
+  <div id="wind-control">
+    <h2>Wind Sound Generator</h2>
+    <label for="frequency">Frequency:</label>
+    <input type="range" id="frequency" min="100" max="1000" value="500">
+    <label for="gain">Gain:</label>
+    <input type="range" id="gain" min="0" max="1" value="0.5">
+    <button id="start-button">Start</button>
+    <button id="stop-button" disabled>Stop</button>
+  </div>
+
+  <script>
+    const audioContext = new AudioContext();
+    let oscillator, gain;
+
+    document.getElementById('start-button').addEventListener('click', () => {
+      oscillator = audioContext.createOscillator();
+      gain = audioContext.createGain();
+
+      oscillator.type = 'noise';
+      oscillator.frequency.setValueAtTime(document.getElementById('frequency').value, audioContext.currentTime);
+      gain.gain.value = document.getElementById('gain').value;
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start();
+
+      document.getElementById('start-button').disabled = true;
+      document.getElementById('stop-button').disabled = false;
+
+      // 선풍기 애니메이션 시작
+      document.getElementById('fan').classList.add('spinning');
+    });
+
+    document.getElementById('stop-button').addEventListener('click', () => {
+      oscillator.stop();
+      oscillator.disconnect();
+      gain.disconnect();
+
+      document.getElementById('start-button').disabled = false;
+      document.getElementById('stop-button').disabled = true;
+
+      // 선풍기 애니메이션 중지
+      document.getElementById('fan').classList.remove('spinning');
+    });
+
+    document.getElementById('frequency').addEventListener('input', () => {
+      oscillator.frequency.setValueAtTime(document.getElementById('frequency').value, audioContext.currentTime);
+    });
+
+    document.getElementById('gain').addEventListener('input', () => {
+      gain.gain.value = document.getElementById('gain').value;
+    });
+  </script>
+</body>
+</html>
