@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Piano Sound Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #piano-control {
+      margin: 20px auto;
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    #piano-control label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    #piano-control input[type="range"] {
+      width: 100%;
+      height: 20px;
+      margin-bottom: 20px;
+    }
+    .piano-key {
+      display: inline-block;
+      width: 30px;
+      height: 100px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: white;
+      cursor: pointer;
+    }
+    .piano-key.black {
+      background-color: black;
+      width: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="piano-control">
+    <h2>Piano Sound Generator</h2>
+    <label for="octave">Octave:</label>
+    <input type="range" id="octave" min="0" max="5" value="3" step="1">
+  </div>
+
+  <div id="piano-keys">
+    <div class="piano-key" data-note="C">C</div>
+    <div class="piano-key black" data-note="C#">C#</div>
+    <div class="piano-key" data-note="D">D</div>
+    <div class="piano-key black" data-note="D#">D#</div>
+    <div class="piano-key" data-note="E">E</div>
+    <div class="piano-key" data-note="F">F</div>
+    <div class="piano-key black" data-note="F#">F#</div>
+    <div class="piano-key" data-note="G">G</div>
+    <div class="piano-key black" data-note="G#">G#</div>
+    <div class="piano-key" data-note="A">A</div>
+    <div class="piano-key black" data-note="A#">A#</div>
+    <div class="piano-key" data-note="B">B</div>
+  </div>
+
+  <script>
+    const audioContext = new AudioContext();
+    let octave = 3; // 기본 옥타브 설정
+
+    document.getElementById('octave').addEventListener('input', () => {
+      octave = parseInt(document.getElementById('octave').value);
+    });
+
+    const pianoKeys = document.querySelectorAll('.piano-key');
+
+    pianoKeys.forEach(key => {
+      key.addEventListener('mousedown', () => {
+        const note = key.dataset.note;
+        const frequency = getFrequency(note, octave);
+
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'triangle'; // 피아노 사운드에 가까운 삼각파 사용
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+        const gain = audioContext.createGain();
+        gain.gain.value = 0.5; // 볼륨 조절
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        key.classList.add('active');
+
+        key.addEventListener('mouseup', () => {
+          oscillator.stop();
+          key.classList.remove('active');
+        });
+      });
+    });
+
+    function getFrequency(note, octave) {
+      const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const noteIndex = notes.indexOf(note);
+
+      return 440 * Math.pow(2, (noteIndex - 9 + (octave - 4) * 12) / 12);
+    }
+  </script>
+</body>
+</html>

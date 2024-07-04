@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Piano Sound Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    #piano-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #piano-control {
+      margin-bottom: 20px;
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+    }
+
+    #piano-control h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    #piano-control label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    #piano-control input[type="range"] {
+      width: 100%;
+      height: 10px;
+      margin-bottom: 10px;
+      background-color: #ddd;
+      border-radius: 5px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    #piano-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      background-color: #4CAF50;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    #piano-control input[type="range"]::-moz-range-thumb {
+      width: 15px;
+      height: 15px;
+      background-color: #4CAF50;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .piano-key {
+      display: inline-block;
+      width: 35px;
+      height: 120px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: white;
+      cursor: pointer;
+      transition: background-color 0.1s ease;
+    }
+
+    .piano-key.black {
+      background-color: black;
+      width: 25px;
+      margin-left: -10px;
+    }
+
+    .piano-key.active {
+      background-color: #e0e0e0;
+    }
+
+    .piano-key:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div id="piano-container">
+    <div id="piano-control">
+      <h2>Piano Sound Generator</h2>
+      <label for="octave">Octave:</label>
+      <input type="range" id="octave" min="0" max="5" value="3" step="1">
+
+      <label for="volume">Volume:</label>
+      <input type="range" id="volume" min="0" max="1" value="0.5" step="0.1">
+    </div>
+
+    <div id="piano-keys">
+      <div class="piano-key" data-note="C">C</div>
+      <div class="piano-key black" data-note="C#">C#</div>
+      <div class="piano-key" data-note="D">D</div>
+      <div class="piano-key black" data-note="D#">D#</div>
+      <div class="piano-key" data-note="E">E</div>
+      <div class="piano-key" data-note="F">F</div>
+      <div class="piano-key black" data-note="F#">F#</div>
+      <div class="piano-key" data-note="G">G</div>
+      <div class="piano-key black" data-note="G#">G#</div>
+      <div class="piano-key" data-note="A">A</div>
+      <div class="piano-key black" data-note="A#">A#</div>
+      <div class="piano-key" data-note="B">B</div>
+    </div>
+  </div>
+
+  <script>
+    const audioContext = new AudioContext();
+    let octave = 3; // 기본 옥타브 설정
+    let volume = 0.5; // 기본 볼륨 설정
+
+    document.getElementById('octave').addEventListener('input', () => {
+      octave = parseInt(document.getElementById('octave').value);
+    });
+
+    document.getElementById('volume').addEventListener('input', () => {
+      volume = parseFloat(document.getElementById('volume').value);
+    });
+
+    const pianoKeys = document.querySelectorAll('.piano-key');
+
+    pianoKeys.forEach(key => {
+      key.addEventListener('mousedown', () => {
+        const note = key.dataset.note;
+        const frequency = getFrequency(note, octave);
+
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'triangle'; // 피아노 사운드에 가까운 삼각파 사용
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+        const gain = audioContext.createGain();
+        gain.gain.setValueAtTime(volume, audioContext.currentTime); // 볼륨 설정
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        key.classList.add('active');
+
+        key.addEventListener('mouseup', () => {
+          oscillator.stop();
+          key.classList.remove('active');
+        });
+      });
+    });
+
+    function getFrequency(note, octave) {
+      const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const noteIndex = notes.indexOf(note);
+
+      return 440 * Math.pow(2, (noteIndex - 9 + (octave - 4) * 12) / 12);
+    }
+  </script>
+</body>
+</html>

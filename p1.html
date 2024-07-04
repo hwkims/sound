@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Piano Sound Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #piano-control {
+      margin: 20px auto;
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    #piano-control label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    #piano-control input[type="range"] {
+      width: 100%;
+      height: 20px;
+      margin-bottom: 20px;
+    }
+    .piano-key {
+      display: inline-block;
+      width: 30px;
+      height: 100px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: white;
+      cursor: pointer;
+    }
+    .piano-key.black {
+      background-color: black;
+      width: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="piano-control">
+    <h2>Piano Sound Generator</h2>
+    <label for="gain">Gain:</label>
+    <input type="range" id="gain" min="0" max="1" value="0.5">
+  </div>
+
+  <div id="piano-keys">
+    <div class="piano-key" data-note="C4">C</div>
+    <div class="piano-key black" data-note="C#4">C#</div>
+    <div class="piano-key" data-note="D4">D</div>
+    <div class="piano-key black" data-note="D#4">D#</div>
+    <div class="piano-key" data-note="E4">E</div>
+    <div class="piano-key" data-note="F4">F</div>
+    <div class="piano-key black" data-note="F#4">F#</div>
+    <div class="piano-key" data-note="G4">G</div>
+    <div class="piano-key black" data-note="G#4">G#</div>
+    <div class="piano-key" data-note="A4">A</div>
+    <div class="piano-key black" data-note="A#4">A#</div>
+    <div class="piano-key" data-note="B4">B</div>
+    <div class="piano-key" data-note="C5">C</div>
+  </div>
+
+  <script>
+    const audioContext = new AudioContext();
+    let gain;
+
+    document.getElementById('gain').addEventListener('input', () => {
+      gain = audioContext.createGain();
+      gain.gain.value = document.getElementById('gain').value;
+    });
+
+    const pianoKeys = document.querySelectorAll('.piano-key');
+
+    pianoKeys.forEach(key => {
+      key.addEventListener('mousedown', () => {
+        const note = key.dataset.note;
+        const frequency = getFrequency(note);
+
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'square'; // 피아노 사운드를 위한 사각파 사용
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        key.classList.add('active');
+
+        key.addEventListener('mouseup', () => {
+          oscillator.stop();
+          key.classList.remove('active');
+        });
+      });
+    });
+
+    function getFrequency(note) {
+      const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const octave = parseInt(note.slice(-1));
+      const noteIndex = notes.indexOf(note.slice(0, -1));
+
+      return 440 * Math.pow(2, (noteIndex - 9 + (octave - 4) * 12) / 12);
+    }
+  </script>
+</body>
+</html>
